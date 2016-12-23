@@ -1,0 +1,56 @@
+1. 安装软件 
+   sudo apt-get install apache2 git-core gitweb git-daemon-run
+
+2. 创建目录，移动文件
+   sudo mkdir /var/www/git
+   sudo mkdir /var/cache/git
+
+3. 编辑文件
+   sudo vim /etc/apache2/conf.d/git, 内容如下：
+
+<Directory /var/www/git>
+   Allow from all
+   AllowOverride all
+   Order allow,deny
+   Options ExecCGI
+   <Files gitweb.cgi>
+   SetHandler cgi-script
+   </Files>
+</Directory>
+DirectoryIndex gitweb.cgi
+SetEnv  GITWEB_CONFIG  /etc/gitweb.conf
+
+  sudo vim /etc/gitweb.conf, 内容如下：
+
+$projectroot = '/var/cache/git/';
+$git_temp = "/tmp";
+#$home_link = $my_uri || "/";
+$home_text = "indextext.html";
+$projects_list = $projectroot;
+$stylesheet = "/git/gitweb.css";
+$logo = "/git/git-logo.png";
+$favicon = "/git/git-favicon.png";
+
+   sudo vim /etc/sv/git-daemon/run, 内容如下：
+
+#!/bin/sh
+exec 2>&1
+echo 'git-daemon starting.'
+#git daemon --base-path=/var/cache/git --detach --syslog --export-all 
+#exec chpst -ugitdaemon /usr/lib/git-core/git-daemon --verbose --base-path=/var/cache/git /var/cache/git
+git daemon	\
+	--detach	\
+	--syslog	\
+	--verbose	\
+	--export-all    \
+	--enable=receive-pack	\
+	--enable=upload-pack	\
+	--enable=upload-archive	\
+	--base-path=/var/cache/git
+
+4. sudo /etc/init.d/apache2 reload， 重新启动机器
+
+
+
+
+
